@@ -1,0 +1,71 @@
+{
+	"name": "vscode-cucumber-js-runner",
+	"displayName": "Cucumber JS Test Runner",
+	"description": "Cucumber JS Test Runner for VS Code",
+	"version": "1.83.0",
+	"publisher": "nick-mandziak",
+	"icon": "images/icon.png",
+	"private": true,
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.83.0"
+	},
+	"categories": [
+		"Testing"
+	],
+	"keywords": [
+		"Cucumber",
+		"Gherkin"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/mandziak-nv/vscode-cucumber-js-runner.git"
+	},
+	"activationEvents": [
+		"workspaceContains:**/*.feature"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"configuration": {
+			"title": "Cucumber Runner",
+			"properties": {
+				"cucumber_runner.features": {
+					"markdownDescription": "The `cucumber_runner.features` setting defines where the extension should look for `.feature` files.\nDefault value:\n```json\n{\n  \"cucumber_runner.features\": [\n    \"features/**/*.feature\"\n  ]\n}\n```",
+					"type": "array",
+					"required": false,
+					"default": [
+						"features/**/*.feature"
+					]
+				},
+				"cucumber_runner.env_variables": {
+					"markdownDescription": "The `cucumber_runner.env_variables` setting defines environment variables that will be passed to the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumber_runner.env_variables\": {}\n}\n```",
+					"type": "object",
+					"required": false,
+					"default": {}
+				},
+				"cucumber_runner.cli_options": {
+					"markdownDescription": "The `cucumber_runner.cli_options` setting defines options that will be passed to the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumber_runner.cli_options\": []\n}\n```",
+					"type": "array",
+					"required": false,
+					"default": []
+				}
+			}
+		}
+	},
+	"scripts": {
+		"build": "vsce package",
+		"publish": "vsce publish",
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"download-api": "dts main && dts dev",
+		"postinstall": "npm run download-api"
+	},
+	"devDependencies": {
+		"@types/node": "^20.8.3",
+		"@types/vscode": "^1.83.0",
+		"@vscode/dts": "^0.4.0",
+		"@vscode/vsce": "^2.21.1",
+		"typescript": "^5.2.2"
+	}
+}
