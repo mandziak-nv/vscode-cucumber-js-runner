@@ -54,9 +54,9 @@ export class TestFile {
 				parent.children.push(testSuite);
 				ancestors.push({ item: testSuite, children: [] });
 			},
-			onTestCase: (name, range) => {
+			onTestCase: (name, range, isOutline) => {
 				const parent = ancestors[ancestors.length - 1];
-				const data = new TestCase(name, thisGeneration);
+				const data = new TestCase(thisGeneration, name, isOutline);
 				const id = `${item.uri}/${data.getLabel()}`;
 
 				const testCase = controller.createTestItem(id, data.getLabel(), item.uri);
@@ -75,10 +75,14 @@ export class TestSuite {
 }
 
 export class TestCase {
-	constructor(private readonly _name: string, public generation: number) { }
+	constructor(public generation: number, private readonly _name: string, private readonly _isOutline: boolean) { }
 
 	get name() {
 		return this._name;
+	}
+
+	get isOutline() {
+		return this._isOutline;
 	}
 
 	getLabel() {

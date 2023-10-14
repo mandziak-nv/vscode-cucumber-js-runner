@@ -89,7 +89,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				let status: string = 'errored';
 				let errorMessage: string | null = null;
 				let stepsPassed: number = 0;
-				let executionTime: number = 0;
+				let executionTime: number | undefined;
 
 				const cucumberLogs = await cucumberRunner.runTest(testCase.name, testRun, debug);
 				cucumberRunner.killCucumberProcess();
@@ -109,8 +109,23 @@ export async function activate(context: vscode.ExtensionContext) {
 							status = 'errored';
 							errorMessage = `Scenario with name "Scenario: ${testCase.name}" not found ¯\\_(ツ)_/¯`;
 						} else if (/^[2-9]/.test(cucumberLog)) {
-							status = 'errored';
-							errorMessage = `Found multiple scenarios with name "Scenario: ${testCase.name}" ¯\\_(ツ)_/¯`;
+							if (testCase.isOutline) {
+								const [scenarioStatusString, , executionTimeString] = cucumberLog.split('\n');
+								if (/\d+ scenarios? \(\d+ passed\)/.test(scenarioStatusString)) {
+									status = 'passed';
+								} else if (/\d+ scenarios? \(\d+ skipped\)/.test(scenarioStatusString)) {
+									status = 'skipped';
+								} else {
+									status = 'failed';
+								}
+								const [totalExecutionTimeString, stepsExecutionTimeString] = executionTimeString.match(/\d+m\d+\.\d+s/g)!;
+								const [, totalExecutionMinutes, totalExecutionSeconds] = /(\d+)m([\d.]+)s/.exec(totalExecutionTimeString)!;
+								executionTime = Number(totalExecutionMinutes) * 60 + Number(totalExecutionSeconds);
+								errorMessage = 'Outline scenario failed. Please check logs for more information';
+							} else {
+								status = 'errored';
+								errorMessage = `Found multiple scenarios with name "Scenario: ${testCase.name}" ¯\\_(ツ)_/¯`;
+							}
 						} else {
 							const [scenarioStatusString, stepsStatusString, executionTimeString] = cucumberLog.split('\n');
 							const scenarioStatus = scenarioStatusString.match(/scenario \(1 (.+)\)/);
