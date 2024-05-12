@@ -1,15 +1,12 @@
 import * as vscode from 'vscode';
-import { TextDecoder } from 'util';
-import { getExtensionConfiguration } from './extensionConfiguration';
-import { TestFile, testData } from './testTree';
+import { getExtensionConfiguration } from './configuration/getExtensionConfiguration';
+import TestCase from './testTree/TestCase';
+import TestFile from './testTree/TestFile';
+import TestSuite from './testTree/TestSuite';
 
-const textDecoder = new TextDecoder('utf-8');
+export const testItemDataMap = new WeakMap<vscode.TestItem, TestFile | TestSuite | TestCase>();
 
-function getTextDecoder(): TextDecoder {
-    return textDecoder;
-}
-
-export function getWorkspaceTestPatterns() {
+export function getWorkspaceTestPatterns(): vscode.RelativePattern[] {
     if (!vscode.workspace.workspaceFolders) {
         return [];
     }
@@ -25,35 +22,19 @@ export async function findInitialFiles(controller: vscode.TestController, patter
 }
 
 export function getOrCreateFile(controller: vscode.TestController, uri: vscode.Uri) {
-    const existing = controller.items.get(uri.toString());
-    if (existing) {
-        return { file: existing, data: testData.get(existing) as TestFile };
+    const existingTestItem = controller.items.get(uri.toString());
+    if (existingTestItem) {
+        return { file: existingTestItem, data: testItemDataMap.get(existingTestItem) as TestFile };
     }
 
-    const file = controller.createTestItem(uri.toString(), uri.path.split('/').pop()!, uri);
-    controller.items.add(file);
+    const newTestItem = controller.createTestItem(uri.toString(), uri.path.split('/').pop()!, uri);
+    controller.items.add(newTestItem);
 
-    const data = new TestFile(getTextDecoder());
-    testData.set(file, data);
+    const testItemData = new TestFile();
+    testItemDataMap.set(newTestItem, testItemData);
 
-    file.canResolveChildren = true;
-    return { file, data };
-}
-
-export const getContentFromFilesystem = async (uri: vscode.Uri) => {
-    try {
-        const rawContent = await vscode.workspace.fs.readFile(uri);
-        return getTextDecoder().decode(rawContent);
-    } catch (e) {
-        console.warn(`Error providing tests for ${uri.fsPath}`, e);
-        return '';
-    }
-}
-
-export function gatherTestItems(collection: vscode.TestItemCollection) {
-    const items: vscode.TestItem[] = [];
-    collection.forEach(item => items.push(item));
-    return items;
+    newTestItem.canResolveChildren = true;
+    return { file: newTestItem, data: testItemData };
 }
 
 export function startWatchingWorkspace(controller: vscode.TestController, fileChangedEmitter: vscode.EventEmitter<vscode.Uri>) {
