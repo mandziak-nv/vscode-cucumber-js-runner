@@ -7,6 +7,11 @@ import { testItemDataMap } from '../other';
 export const startTestRun = async (controller: vscode.TestController, request: vscode.TestRunRequest, token: vscode.CancellationToken) => {
     const testRun = controller.createTestRun(request);
 
+    token.onCancellationRequested(() => {
+        CucumberRunner.killCucumberProcess();
+        testRun.appendOutput('Run instance cancelled.\r\n\n');
+    });
+
     const initialTests = request.include ?? gatherTestItems(controller.items);
     const testQueue = await discoverTests(initialTests);
     await runTestQueue(testQueue);
@@ -135,11 +140,6 @@ export const startTestRun = async (controller: vscode.TestController, request: v
 
         return status;
     }
-
-    token.onCancellationRequested(() => {
-        CucumberRunner.killCucumberProcess();
-        testRun.appendOutput('Run instance cancelled.\r\n\n');
-    });
 
     function gatherTestItems(testItemCollection: vscode.TestItemCollection): vscode.TestItem[] {
         const testItems: vscode.TestItem[] = [];
