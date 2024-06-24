@@ -55,3 +55,13 @@ Example:
   ]
 }
 ```
+
+The `cucumber_runner.cucumber_path` setting defines the path to the `cucumber-js` command.
+
+Example:
+
+```json
+{
+  "cucumber_runner.cucumber_path": "./node_modules/.bin/cucumber-js"
+}
+```
