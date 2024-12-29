@@ -2,7 +2,7 @@
 	"name": "vscode-cucumber-js-runner",
 	"displayName": "Cucumber JS Test Runner",
 	"description": "Cucumber JS Test Runner for VS Code",
-	"version": "1.89.2",
+	"version": "1.89.3",
 	"publisher": "nick-mandziak",
 	"icon": "images/icon.png",
 	"private": true,

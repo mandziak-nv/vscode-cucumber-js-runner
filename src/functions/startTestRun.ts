@@ -66,7 +66,7 @@ export const startTestRun = async (controller: vscode.TestController, request: v
         let executionTime: number | undefined;
 
         for (let i = 0; i < cucumberOutput.length; i++) {
-            const cucumberOutputLine = cucumberOutput[i].trim();
+            const cucumberOutputLine = cucumberOutput[i].trim().replace(/\x1b\[[0-9;]*m/g, '');
 
             if (cucumberOutputLine === 'Failures:') {
                 if (i + 1 < cucumberOutput.length) {
