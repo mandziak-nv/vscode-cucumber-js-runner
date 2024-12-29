@@ -54,6 +54,12 @@
 					"type": "string",
 					"required": false,
 					"default": "./node_modules/.bin/cucumber-js"
+				},
+				"cucumber_runner.cwd": {
+					"markdownDescription": "The `cucumber_runner.cwd` setting defines the current working directory for the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumber_runner.cwd\": \"${workspaceFolder}\"\n}\n```",
+					"type": "string",
+					"required": false,
+					"default": "${workspaceFolder}"
 				}
 			}
 		}
