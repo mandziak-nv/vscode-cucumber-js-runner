@@ -66,23 +66,19 @@ export const startTestRun = async (controller: vscode.TestController, request: v
         let executionTime: number | undefined;
 
         for (let i = 0; i < cucumberOutput.length; i++) {
-            const cucumberOutputLine = cucumberOutput[i].trim().replace(/\x1b\[[0-9;]*m/g, '');
-
-            if (cucumberOutputLine === 'Failures:') {
-                if (i + 1 < cucumberOutput.length) {
-                    const failure = cucumberOutput[i + 1]
-                        .trim().match(/\ +[✖?]\ .+?\n(.+?)(?=\n\ +[-✔]\ (?:Given|When|Then|And|But|After))/s);
-                    if (failure) {
-                        errorMessage = failure[1];
-                    }
-                }
-            } else if (/\d+m\d+\.\d+s\ \(executing\ steps:\ \d+m\d+\.\d+s\)/.test(cucumberOutputLine)) {
-                if (/^0/.test(cucumberOutputLine)) {
+            const cucumberOutputLineCleared = cucumberOutput[i].trim().replace(/\x1b\[[0-9;]*m/g, '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+            
+            if (cucumberOutputLineCleared.includes('Failures:')) {
+                const failureMessage = cucumberOutput.join('\n').split('Failures:')[1];
+                errorMessage = failureMessage;
+                break;
+            } else if (/\d+m\d+\.\d+s\ \(executing\ steps:\ \d+m\d+\.\d+s\)/.test(cucumberOutputLineCleared)) {
+                if (/^0/.test(cucumberOutputLineCleared)) {
                     status = 'errored';
                     errorMessage = `Scenario with name "Scenario: ${testCase.name}" not found ¯\\_(ツ)_/¯`;
-                } else if (/^[2-9]/.test(cucumberOutputLine)) {
+                } else if (/^[2-9]/.test(cucumberOutputLineCleared)) {
                     if (testCase.isOutline) {
-                        const [scenarioStatusString, , executionTimeString] = cucumberOutputLine.split('\n');
+                        const [scenarioStatusString, , executionTimeString] = cucumberOutputLineCleared.split('\n');
                         if (/\d+ scenarios? \(\d+ passed\)/.test(scenarioStatusString)) {
                             status = 'passed';
                         } else if (/\d+ scenarios? \(\d+ skipped\)/.test(scenarioStatusString)) {
@@ -99,7 +95,7 @@ export const startTestRun = async (controller: vscode.TestController, request: v
                         errorMessage = `Found multiple scenarios with name "Scenario: ${testCase.name}" ¯\\_(ツ)_/¯`;
                     }
                 } else {
-                    const [scenarioStatusString, stepsStatusString, executionTimeString] = cucumberOutputLine.split('\n');
+                    const [scenarioStatusString, stepsStatusString, executionTimeString] = cucumberOutputLineCleared.split('\n');
                     const scenarioStatus = scenarioStatusString.match(/scenario \(1 (.+)\)/);
                     if (scenarioStatus) {
                         status = scenarioStatus[1];
