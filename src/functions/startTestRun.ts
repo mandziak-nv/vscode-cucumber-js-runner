@@ -133,7 +133,7 @@ export const startTestRun = async (controller: vscode.TestController, request: v
                 break;
             default:
                 const failMsg = new vscode.TestMessage(errorMessage || 'Unknown error! Please check logs for more information');
-                failMsg.location = new vscode.Location(testItem.uri!, testItem.range!.end.translate(stepsPassed + 1));
+                failMsg.location = new vscode.Location(testItem.uri!, testCase.startLine.translate(stepsPassed + 1));
                 testRun.failed(testItem, failMsg, executionTime);
                 break;
         }
