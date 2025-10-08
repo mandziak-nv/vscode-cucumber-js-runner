@@ -31,12 +31,12 @@ export class CucumberRunner {
     private static spawnCucumberProcess(testRun: vscode.TestRun, scenarioName: string, debug?: boolean): ChildProcessWithoutNullStreams {
         const cwd = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
         const scenarioNameRegexed = `^${scenarioName.replace(/([.+*?^$()[\]{}|\\])/g, '\\$1')}$`;
-        const { featurePaths, env, cliOptions, cucumberPath } = getExtensionConfiguration();
+        const { featurePaths, env, cliOptions, cucumberPath, debugEnv } = getExtensionConfiguration();
         const nodeArguments = [cucumberPath, ...featurePaths, '--name', scenarioNameRegexed, ...cliOptions];
 
         this.log(testRun,
             'Executing command: '
-            + (debug ? 'PWDEBUG=1 ' : '')
+            + (debug && Object.keys(debugEnv).length ? `${Object.keys(debugEnv).map(vr => vr + '=......').join(' ')} ` : '')
             + (Object.keys(env).length ? `${Object.keys(env).map(vr => vr + '=......').join(' ')} ` : '')
             + 'node '
             + [cucumberPath, ...featurePaths, '--name', `"${scenarioNameRegexed}"`, ...cliOptions].join(' ')
@@ -49,7 +49,7 @@ export class CucumberRunner {
                 cwd: cwd,
                 env: {
                     ...process.env, ...env,
-                    ...(debug && { 'PWDEBUG': '1' }),
+                    ...(debug && debugEnv),
                 },
             }
         );
