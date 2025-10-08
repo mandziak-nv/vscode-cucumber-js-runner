@@ -76,7 +76,7 @@ Example:
 }
 ```
 
-The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging tests. By default, it sets `PWDEBUG=1` for Playwright Inspector support.
+The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging tests.
 
 Example:
 

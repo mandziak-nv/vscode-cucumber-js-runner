@@ -56,11 +56,10 @@
 					"default": "./node_modules/.bin/cucumber-js"
 				},
 				"cucumber_runner.debug_env_variables": {
-					"markdownDescription": "The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging.\nDefault value:\n```json\n{\n  \"cucumber_runner.debug_env_variables\": {\n    \"PWDEBUG\": \"1\"\n  }\n}\n```",
+					"markdownDescription": "The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging.\nSample:\n```json\n{\n  \"cucumber_runner.debug_env_variables\": {\n    \"PWDEBUG\": \"1\"\n  }\n}\n```\nDefault value:\n```json\n{\n  \"cucumber_runner.debug_env_variables\": {}\n}\n```",
 					"type": "object",
 					"required": false,
 					"default": {
-						"PWDEBUG": "1"
 					}
 				}
 			}
