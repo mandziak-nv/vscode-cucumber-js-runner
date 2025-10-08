@@ -36,7 +36,7 @@ export class CucumberRunner {
 
         this.log(testRun,
             'Executing command: '
-            // + (debug ? 'DEBUG=cucumber ' : '')
+            + (debug ? 'PWDEBUG=1 ' : '')
             + (Object.keys(env).length ? `${Object.keys(env).map(vr => vr + '=......').join(' ')} ` : '')
             + 'node '
             + [cucumberPath, ...featurePaths, '--name', `"${scenarioNameRegexed}"`, ...cliOptions].join(' ')
@@ -49,7 +49,7 @@ export class CucumberRunner {
                 cwd: cwd,
                 env: {
                     ...process.env, ...env,
-                    // ...(debug && { 'DEBUG': 'cucumber' }),
+                    ...(debug && { 'PWDEBUG': '1' }),
                 },
             }
         );
