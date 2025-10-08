@@ -16,11 +16,7 @@ Feature: Greeting
 
 ## Debugging
 
-The extension supports debugging tests through the VS Code testing panel. When you click the debug button for a test, it will run with environment variables defined in `cucumber_runner.debug_env_variables`, which by default sets `PWDEBUG=1` to enable Playwright's debug mode (if you're using Playwright). This allows you to:
-
-- Step through your test execution
-- Inspect the browser state
-- Use Playwright Inspector for debugging
+The extension supports debugging tests through the VS Code testing panel. When you click the debug button for a test, it will run with environment variables defined in `cucumber_runner.debug_env_variables`. This allows you for example to use Playwright Inspector for debugging ( `PWDEBUG=1` ) to step through your test execution or inspect your browser state.
 
 Simply click the debug icon (instead of the run icon) next to any test in the VS Code testing panel.
 
@@ -51,6 +47,19 @@ Example:
 }
 ```
 
+The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging tests.
+
+Example:
+
+```json
+{
+  "cucumber_runner.debug_env_variables": {
+    "PWDEBUG": "1"
+  }
+}
+```
+
+
 The `cucumber_runner.cli_options` setting defines options that will be passed to the `cucumber-js` command.
 
 Example:
@@ -73,17 +82,5 @@ Example:
 ```json
 {
   "cucumber_runner.cucumber_path": "./node_modules/.bin/cucumber-js"
-}
-```
-
-The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging tests.
-
-Example:
-
-```json
-{
-  "cucumber_runner.debug_env_variables": {
-    "PWDEBUG": "1"
-  }
 }
 ```
