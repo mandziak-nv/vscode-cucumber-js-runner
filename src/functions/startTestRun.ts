@@ -4,7 +4,7 @@ import TestCase from '../testTree/TestCase';
 import TestFile from '../testTree/TestFile';
 import { testItemDataMap } from '../other';
 
-export const startTestRun = async (controller: vscode.TestController, request: vscode.TestRunRequest, token: vscode.CancellationToken) => {
+export const startTestRun = async (controller: vscode.TestController, request: vscode.TestRunRequest, token: vscode.CancellationToken, debug: boolean = false) => {
     const testRun = controller.createTestRun(request);
 
     token.onCancellationRequested(() => {
@@ -52,7 +52,7 @@ export const startTestRun = async (controller: vscode.TestController, request: v
 
     async function runTest(testCase: TestCase): Promise<string[]> {
         testRun.appendOutput(`Running test: ${testCase.name}\r\n`);
-        const cucumberOutput = await CucumberRunner.runTest(testRun, testCase.name);
+        const cucumberOutput = await CucumberRunner.runTest(testRun, testCase.name, debug);
         if (!token.isCancellationRequested) {
             testRun.appendOutput('Finished running test!\r\n\n');
         }

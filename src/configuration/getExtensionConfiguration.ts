@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-export function getExtensionConfiguration(): { featurePaths: string[], env: { [key: string]: string }, cliOptions: string[], cucumberPath: string, cwd: string  } {
+export function getExtensionConfiguration(): { featurePaths: string[], env: { [key: string]: string }, cliOptions: string[], cucumberPath: string, cwd: string,  debugEnv: { [key: string]: string } } {
     const configuration = vscode.workspace.getConfiguration('cucumber_runner');
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath!;
     const cwd = configuration.get<string>('cwd')!.trim().length > 0 ? configuration.get<string>('cwd')!.replace(/\$\{workspaceFolder\}/g, workspaceFolder) : workspaceFolder;
@@ -10,5 +10,6 @@ export function getExtensionConfiguration(): { featurePaths: string[], env: { [k
         cwd: cwd,
         cliOptions: configuration.get<string[]>('cli_options')!,
         cucumberPath: configuration.get<string>('cucumber_path')!,
+        debugEnv: configuration.get<{ [key: string]: string }>('debug_env_variables')!,
     }
 }
