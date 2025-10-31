@@ -29,10 +29,9 @@ export class CucumberRunner {
     }
 
     private static spawnCucumberProcess(testRun: vscode.TestRun, scenarioName: string, debug?: boolean): ChildProcessWithoutNullStreams {
-        const cwd = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
         let scenarioNameRegexed = `^${scenarioName.replace(/([.+*?^$()[\]{}|\\])/g, '\\$1')}$`;
         scenarioNameRegexed = scenarioNameRegexed.replace(/<[^>]*>/g, ".*"); // match any example parameter
-        const { featurePaths, env, cliOptions, cucumberPath } = getExtensionConfiguration();
+        const { cwd, featurePaths, env, cliOptions, cucumberPath } = getExtensionConfiguration();
         const nodeArguments = [cucumberPath, ...featurePaths, '--name', scenarioNameRegexed, ...cliOptions];
 
         this.log(testRun,

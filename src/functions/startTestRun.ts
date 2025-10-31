@@ -63,58 +63,49 @@ export const startTestRun = async (controller: vscode.TestController, request: v
         let status: string = 'errored';
         let errorMessage: string | undefined;
         let stepsPassed: number = 0;
+        let stepsTotal: number = 0;
         let executionTime: number | undefined;
+        let examplesPassed: number = 0;
+        let examplesTotal: number = 0;
 
         for (let i = 0; i < cucumberOutput.length; i++) {
-            const cucumberOutputLine = cucumberOutput[i].trim();
-
-            if (cucumberOutputLine === 'Failures:') {
-                if (i + 1 < cucumberOutput.length) {
-                    const failure = cucumberOutput[i + 1]
-                        .trim().match(/\ +[✖?]\ .+?\n(.+?)(?=\n\ +[-✔]\ (?:Given|When|Then|And|But|After))/s);
-                    if (failure) {
-                        errorMessage = failure[1];
-                    }
-                }
+            const cucumberOutputLine = cucumberOutput[i].trim().replace(/\x1b\[[0-9;]*m/g, '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+            
+            if (cucumberOutputLine.includes('Failures:')) {
+                const failureMessage = cucumberOutput.join('\n').split('Failures:')[1];
+                errorMessage = failureMessage;
+                status = 'failed';
+                break;
             } else if (/\d+m\d+\.\d+s\ \(executing\ steps:\ \d+m\d+\.\d+s\)/.test(cucumberOutputLine)) {
-                if (/^0/.test(cucumberOutputLine)) {
-                    status = 'errored';
-                    errorMessage = `Scenario with name "Scenario: ${testCase.name}" not found ¯\\_(ツ)_/¯`;
-                } else if (/^[2-9]/.test(cucumberOutputLine)) {
-                    if (testCase.isOutline) {
-                        const [scenarioStatusString, , executionTimeString] = cucumberOutputLine.split('\n');
-                        if (/\d+ scenarios? \(\d+ passed\)/.test(scenarioStatusString)) {
-                            status = 'passed';
-                        } else if (/\d+ scenarios? \(\d+ skipped\)/.test(scenarioStatusString)) {
-                            status = 'skipped';
-                        } else {
-                            status = 'failed';
-                        }
-                        const [totalExecutionTimeString, stepsExecutionTimeString] = executionTimeString.match(/\d+m\d+\.\d+s/g)!;
-                        const [, totalExecutionMinutes, totalExecutionSeconds] = /(\d+)m([\d.]+)s/.exec(totalExecutionTimeString)!;
-                        executionTime = Number(totalExecutionMinutes) * 60 + Number(totalExecutionSeconds);
-                        errorMessage = 'Outline scenario failed. Please check logs for more information';
-                    } else {
-                        status = 'errored';
-                        errorMessage = `Found multiple scenarios with name "Scenario: ${testCase.name}" ¯\\_(ツ)_/¯`;
-                    }
+                const scenarioMatch = cucumberOutputLine.match(/(\d+) scenarios?: (\d+) passed, (\d+) failed, (\d+) skipped/);
+                const stepMatch = cucumberOutputLine.match(/(\d+) steps?: (\d+) passed, (\d+) failed, (\d+) skipped/);
+                
+                if (scenarioMatch) {
+                    examplesTotal = Number(scenarioMatch[1]);
+                    examplesPassed = Number(scenarioMatch[2]);
+                }
+
+                if (stepMatch) {
+                    stepsTotal = Number(stepMatch[1]);
+                    stepsPassed = Number(stepMatch[2]);
+                }
+
+                // Determine overall status based on scenarios and steps
+                if (examplesPassed === examplesTotal && stepsPassed === stepsTotal) {
+                    status = 'passed';
+                } else if (examplesPassed === 0 || stepsPassed === 0) {
+                    status = 'failed';
                 } else {
-                    const [scenarioStatusString, stepsStatusString, executionTimeString] = cucumberOutputLine.split('\n');
-                    const scenarioStatus = scenarioStatusString.match(/scenario \(1 (.+)\)/);
-                    if (scenarioStatus) {
-                        status = scenarioStatus[1];
-                    } else {
-                        status = 'errored';
-                    }
-                    const stepsStatus = stepsStatusString.match(/(\d+) passed/);
-                    if (stepsStatus) {
-                        stepsPassed = Number(stepsStatus[1]);
-                    } else {
-                        stepsPassed = 0;
-                    }
-                    const [totalExecutionTimeString, stepsExecutionTimeString] = executionTimeString.match(/\d+m\d+\.\d+s/g)!;
-                    const [, totalExecutionMinutes, totalExecutionSeconds] = /(\d+)m([\d.]+)s/.exec(totalExecutionTimeString)!;
-                    executionTime = Number(totalExecutionMinutes) * 60 + Number(totalExecutionSeconds);
+                    status = 'failed';
+                    errorMessage = `${examplesTotal - examplesPassed} out of ${examplesTotal} examples failed, ` +
+                                   `${stepsTotal - stepsPassed} out of ${stepsTotal} steps failed`;
+                }
+
+                const executionTimeMatch = cucumberOutputLine.match(/(\d+)m([\d.]+)s/);
+                if (executionTimeMatch) {
+                    const minutes = Number(executionTimeMatch[1]);
+                    const seconds = Number(executionTimeMatch[2]);
+                    executionTime = minutes * 60 + seconds;
                 }
             }
         }
@@ -131,11 +122,17 @@ export const startTestRun = async (controller: vscode.TestController, request: v
             case 'skipped':
                 testRun.skipped(testItem);
                 break;
+            case 'failed':
+                const failMsg = new vscode.TestMessage(errorMessage || 
+                    `${examplesTotal - examplesPassed} out of ${examplesTotal} examples failed, ` +
+                    `${stepsTotal - stepsPassed} out of ${stepsTotal} steps failed`
+                );
+                failMsg.location = new vscode.Location(testItem.uri!, testItem.range!.end);
+                testRun.failed(testItem, failMsg, executionTime);
+                break;
             default:
                 const failMsg = new vscode.TestMessage(errorMessage || 'Unknown error! Please check logs for more information');
                 failMsg.location = new vscode.Location(testItem.uri!, testCase.startLine.translate(stepsPassed + 1));
-                testRun.failed(testItem, failMsg, executionTime);
-                break;
         }
 
         return status;
