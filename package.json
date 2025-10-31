@@ -2,7 +2,7 @@
 	"name": "vscode-cucumber-js-runner",
 	"displayName": "Cucumber JS Test Runner",
 	"description": "Cucumber JS Test Runner for VS Code",
-	"version": "1.89.2",
+	"version": "1.89.3",
 	"publisher": "nick-mandziak",
 	"icon": "images/icon.png",
 	"private": true,
@@ -55,12 +55,18 @@
 					"required": false,
 					"default": "./node_modules/.bin/cucumber-js"
 				},
-				"cucumber_runner.debug_env_variables": {
+				"cucumber_runner.cwd": {
+					"markdownDescription": "The `cucumber_runner.cwd` setting defines the current working directory for the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumber_runner.cwd\": \"${workspaceFolder}\"\n}\n```",
+					"type": "string",
+					"required": false,
+					"default": "${workspaceFolder}"
+				},
+        "cucumber_runner.debug_env_variables": {
 					"markdownDescription": "The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging.\nDefault value:\n```json\n{\n  \"cucumber_runner.debug_env_variables\": {}\n}\n```",
 					"type": "object",
 					"required": false,
 					"default": {}
-				}
+        }
 			}
 		}
 	},
