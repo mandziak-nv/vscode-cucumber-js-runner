@@ -16,57 +16,54 @@ Feature: Greeting
 
 ## Debugging
 
-The extension supports debugging tests through the VS Code testing panel. When you click the debug button for a test, it will run with environment variables defined in `cucumber_runner.debug_env_variables`. This allows you for example to use Playwright Inspector for debugging ( `PWDEBUG=1` ) to step through your test execution or inspect your browser state.
-
-Simply click the debug icon (instead of the run icon) next to any test in the VS Code testing panel.
+The extension currently does not support debugging. However, you can use the Debug option to run tests with an additional set of environment variables defined in `cucumberJsRunner.debugEnv`.
 
 ## Extension Settings
 
-The `cucumber_runner.features` setting defines where the extension should look for `.feature` files.
+The `cucumberJsRunner.features` setting defines where the extension should look for `.feature` files.
 
 Example:
 
 ```json
 {
-  "cucumber_runner.features": [
+  "cucumberJsRunner.features": [
     "features/**/*.feature"
   ]
 }
 ```
 
-The `cucumber_runner.env_variables` setting defines environment variables that will be passed to the `cucumber-js` command.
+The `cucumberJsRunner.env` setting defines environment variables that will be passed to the `cucumber-js` command.
 
 Example:
 
 ```json
 {
-  "cucumber_runner.env_variables": {
+  "cucumberJsRunner.env": {
     "BROWSER": "chromium",
     "DEVICE": "desktop"
   }
 }
 ```
 
-The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging tests.
+The `cucumberJsRunner.debugEnv` setting defines debug environment variables that will be passed to the `cucumber-js` command when debugging, alongside those specified in the `cucumberJsRunner.env` setting.
 
 Example:
 
 ```json
 {
-  "cucumber_runner.debug_env_variables": {
-    "PWDEBUG": "1"
+  "cucumberJsRunner.debugEnv": {
+    "DEBUG": "true"
   }
 }
 ```
 
-
-The `cucumber_runner.cli_options` setting defines options that will be passed to the `cucumber-js` command.
+The `cucumberJsRunner.cliArgs` setting defines additional arguments that will be passed to the `cucumber-js` command.
 
 Example:
 
 ```json
 {
-  "cucumber_runner.cli_options": [
+  "cucumberJsRunner.cliArgs": [
     "--profile",
     "parallel",
     "--tags",
@@ -75,12 +72,22 @@ Example:
 }
 ```
 
-The `cucumber_runner.cucumber_path` setting defines the path to the `cucumber-js` command.
+The `cucumberJsRunner.cwd` setting defines the current working directory for the `cucumber-js` command. The first workspace folder will be used if not specified.
 
 Example:
 
 ```json
 {
-  "cucumber_runner.cucumber_path": "./node_modules/.bin/cucumber-js"
+  "cucumberJsRunner.cwd": "/Users/user/projects/cucumber-project"
+}
+```
+
+The `cucumberJsRunner.cucumberExecutable` setting defines the path to the `cucumber-js` command.
+
+Example:
+
+```json
+{
+  "cucumberJsRunner.cucumberExecutable": "./node_modules/.bin/cucumber-js"
 }
 ```

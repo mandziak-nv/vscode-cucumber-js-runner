@@ -2,13 +2,13 @@
 	"name": "vscode-cucumber-js-runner",
 	"displayName": "Cucumber JS Test Runner",
 	"description": "Cucumber JS Test Runner for VS Code",
-	"version": "1.89.3",
+	"version": "2.0.0",
 	"publisher": "nick-mandziak",
 	"icon": "images/icon.png",
 	"private": true,
 	"license": "MIT",
 	"engines": {
-		"vscode": "^1.89.0"
+		"vscode": "^1.107.0"
 	},
 	"categories": [
 		"Testing"
@@ -29,44 +29,43 @@
 		"configuration": {
 			"title": "Cucumber JS Test Runner",
 			"properties": {
-				"cucumber_runner.features": {
-					"markdownDescription": "The `cucumber_runner.features` setting defines where the extension should look for `.feature` files.\nDefault value:\n```json\n{\n  \"cucumber_runner.features\": [\n    \"features/**/*.feature\"\n  ]\n}\n```",
+				"cucumberJsRunner.features": {
+					"markdownDescription": "The `cucumberJsRunner.features` setting defines where the extension should look for `.feature` files.\nDefault value:\n```json\n{\n  \"cucumberJsRunner.features\": [\n    \"features/**/*.feature\"\n  ]\n}\n```",
 					"type": "array",
 					"required": false,
 					"default": [
 						"features/**/*.feature"
 					]
 				},
-				"cucumber_runner.env_variables": {
-					"markdownDescription": "The `cucumber_runner.env_variables` setting defines environment variables that will be passed to the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumber_runner.env_variables\": {}\n}\n```",
+				"cucumberJsRunner.env": {
+					"markdownDescription": "The `cucumberJsRunner.env` setting defines environment variables that will be passed to the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumberJsRunner.env\": {}\n}\n```",
 					"type": "object",
 					"required": false,
 					"default": {}
 				},
-				"cucumber_runner.cli_options": {
-					"markdownDescription": "The `cucumber_runner.cli_options` setting defines options that will be passed to the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumber_runner.cli_options\": []\n}\n```",
+				"cucumberJsRunner.debugEnv": {
+					"markdownDescription": "The `cucumberJsRunner.debugEnv` setting defines debug environment variables that will be passed to the `cucumber-js` command when debugging, alongside those specified in the `env` setting.\nDefault value:\n```json\n{\n  \"cucumberJsRunner.debugEnv\": {}\n}\n```",
+					"type": "object",
+					"required": false,
+					"default": {}
+				},
+				"cucumberJsRunner.cliArgs": {
+					"markdownDescription": "The `cucumberJsRunner.cliArgs` setting defines arguments that will be passed to the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumberJsRunner.cliArgs\": []\n}\n```",
 					"type": "array",
 					"required": false,
 					"default": []
 				},
-				"cucumber_runner.cucumber_path": {
-					"markdownDescription": "",
+				"cucumberJsRunner.cwd": {
+					"markdownDescription": "The `cucumberJsRunner.cwd` setting defines the current working directory for the `cucumber-js` command. The first workspace folder will be used if not specified.",
+					"type": "string",
+					"required": false
+				},
+				"cucumberJsRunner.cucumberExecutable": {
+					"markdownDescription": "The `cucumberJsRunner.cucumberExecutable` setting defines the path to the `cucumber-js` command. Default value:\n```json\n{\n  \"cucumberJsRunner.cucumberExecutable\": \"./node_modules/.bin/cucumber-js\"\n}\n```",
 					"type": "string",
 					"required": false,
 					"default": "./node_modules/.bin/cucumber-js"
-				},
-				"cucumber_runner.cwd": {
-					"markdownDescription": "The `cucumber_runner.cwd` setting defines the current working directory for the `cucumber-js` command.\nDefault value:\n```json\n{\n  \"cucumber_runner.cwd\": \"${workspaceFolder}\"\n}\n```",
-					"type": "string",
-					"required": false,
-					"default": "${workspaceFolder}"
-				},
-        "cucumber_runner.debug_env_variables": {
-					"markdownDescription": "The `cucumber_runner.debug_env_variables` setting defines environment variables that will be passed to the `cucumber-js` command when debugging.\nDefault value:\n```json\n{\n  \"cucumber_runner.debug_env_variables\": {}\n}\n```",
-					"type": "object",
-					"required": false,
-					"default": {}
-        }
+				}
 			}
 		}
 	},
@@ -77,10 +76,13 @@
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./"
 	},
+	"dependencies": {
+		"tree-kill": "^1.2.2"
+	},
 	"devDependencies": {
-		"@types/node": "^20.14.8",
-		"@types/vscode": "^1.89.0",
-		"@vscode/vsce": "^2.29.0",
-		"typescript": "^5.5.2"
+		"@types/node": "^25.0.3",
+		"@types/vscode": "^1.107.0",
+		"@vscode/vsce": "^3.7.1",
+		"typescript": "^5.9.3"
 	}
 }

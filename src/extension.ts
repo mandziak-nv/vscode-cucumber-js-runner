@@ -1,56 +1,51 @@
 import * as vscode from 'vscode';
-import { findInitialFiles, getOrCreateFile, getWorkspaceTestPatterns, startWatchingWorkspace, testItemDataMap } from './other';
-import { startTestRun } from './functions/startTestRun';
-import TestFile from './testTree/TestFile';
+import { createInitialTestItems, reloadTestItems } from './services/TestItemCreator';
+import { resolveTestItemChildren } from './services/TestItemResolver';
+import { createWorkspaceWatchers, reloadWorkspaceWatchers } from './services/WorkspaceWatcherProvider';
+import { startTestRun } from './services/TestRunHandler';
+import { CONFIG_NAME, CONFIG_SCHEMA } from './configuration/configuration';
+import { migrateOldConfig } from './services/ConfigMigration';
 
 export async function activate(context: vscode.ExtensionContext) {
-	const testController = vscode.tests.createTestController('cucumberTestController', 'Cucumber Tests');
+	migrateOldConfig();
 
-	testController.refreshHandler = async () => {
-		testController.items.forEach((item, collection) => collection.delete(item.id));
-		await Promise.all(getWorkspaceTestPatterns().map((pattern) => findInitialFiles(testController, pattern)));
+	const controller = vscode.tests.createTestController('CUCUMBER_JS_TEST_CONTROLLER', 'Cucumber JS Test Runner');
+
+	const resolveHandler = async (item?: vscode.TestItem) => {
+		if (item) {
+			await resolveTestItemChildren(controller, item);
+		}
 	};
+	controller.resolveHandler = resolveHandler;
+
+	const refreshHandler = async (token: vscode.CancellationToken) => {
+		await reloadTestItems(controller);
+	};
+	controller.refreshHandler = refreshHandler;
 
 	const runHandler = (request: vscode.TestRunRequest, token: vscode.CancellationToken) => {
-		startTestRun(testController, request, token, false);
+		startTestRun(controller, request, token, false);
 	};
+	controller.createRunProfile('Run Tests', vscode.TestRunProfileKind.Run, runHandler, true, undefined, false);
 
 	const debugHandler = (request: vscode.TestRunRequest, token: vscode.CancellationToken) => {
-		startTestRun(testController, request, token, true);
+		startTestRun(controller, request, token, true);
 	};
+	controller.createRunProfile('Debug Tests', vscode.TestRunProfileKind.Debug, debugHandler, true, undefined, false);
 
-	testController.createRunProfile('Run Tests', vscode.TestRunProfileKind.Run, runHandler, true, undefined, false);
-	testController.createRunProfile('Debug Tests', vscode.TestRunProfileKind.Debug, debugHandler, true, undefined, false);
-
-	const fileChangedEmitter = new vscode.EventEmitter<vscode.Uri>();
-
-	testController.resolveHandler = async (item) => {
-		if (!item) {
-			context.subscriptions.push(...startWatchingWorkspace(testController, fileChangedEmitter));
-			return;
-		}
-
-		const testItemData = testItemDataMap.get(item);
-		if (testItemData instanceof TestFile) {
-			await testItemData.updateFromDisk(testController, item);
-		}
-	};
-
-	context.subscriptions.push(testController);
-
-	function updateNodeForDocument(document: vscode.TextDocument) {
-		if (document.uri.scheme === 'file' && document.uri.path.endsWith('.feature')) {
-			const { file, data } = getOrCreateFile(testController, document.uri);
-			data.updateFromContents(testController, file, document.getText());
-		}
-	}
-
-	for (const document of vscode.workspace.textDocuments) {
-		updateNodeForDocument(document);
-	}
+	context.subscriptions.push(controller);
 
 	context.subscriptions.push(
-		vscode.workspace.onDidOpenTextDocument(updateNodeForDocument),
-		vscode.workspace.onDidChangeTextDocument(e => updateNodeForDocument(e.document)),
+		vscode.workspace.onDidChangeConfiguration(async (e: vscode.ConfigurationChangeEvent) => {
+			if (e.affectsConfiguration(`${CONFIG_NAME}.${CONFIG_SCHEMA.FEATURES.key}`)
+				|| (e.affectsConfiguration(`${CONFIG_NAME}.${CONFIG_SCHEMA.CWD.key}`))) {
+				await reloadTestItems(controller);
+				reloadWorkspaceWatchers(controller, context.subscriptions);
+			}
+		})
 	);
+
+	await createInitialTestItems(controller);
+
+	createWorkspaceWatchers(controller, context.subscriptions);
 }
